@@ -31,6 +31,7 @@ del /S /F .git
 del /S /F templates
 del README.md
 del initproject.sh
+del initproject.bat
 
 echo "Initializing new git project..."
 git init
