@@ -4,7 +4,6 @@
   "author": "CD.Wang<chundongwang@gmail.com>",
   "version": "0.0.1",
   "dependencies": {
-    // as of 3/15/15
     "connect": "3.3.x",
     "express": "4.12.x",
     "jade": "1.9.x",
