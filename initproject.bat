@@ -1,4 +1,5 @@
-REM @echo off
+@echo off
+
 echo "Creating necessary folders..."
 mkdir .\static
 mkdir .\static\images
@@ -27,13 +28,13 @@ echo "Setting up dependencies from NPM..."
 npm install
 
 echo "Removing stuff you don't want..."
-del /S /F .git
-del /S /F templates
+del /S /Q /F .git
+del /S /Q /F templates
 del README.md
 del initproject.sh
 del initproject.bat
 
 echo "Initializing new git project..."
-git init
-git add .
-git commit -m"Initial Commit"
+REM git init
+REM git add .
+REM git commit -m"Initial Commit"
