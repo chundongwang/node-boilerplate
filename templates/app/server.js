@@ -1,40 +1,33 @@
 //setup Dependencies
-var connect = require('connect')
-    , express = require('express')
-    , port = (process.env.PORT || 8081);
+var connect = require('connect');
+var express = require('express');
+var session = require('express-session');
+var favicon = require('serve-favicon');
+var bodyParser = require('body-parser');
+var multer = require('multer');
+var path = require('path');
 
 //Setup Express
-var server = express.createServer();
-server.configure(function(){
-    server.set('views', __dirname + '/views');
-    server.set('view options', { layout: false });
-    server.use(connect.bodyParser());
-    server.use(express.cookieParser());
-    server.use(express.session({ secret: "shhhhhhhhh!"}));
-    server.use(connect.static(__dirname + '/static'));
-    server.use(server.router);
-});
+var app = express();
 
-//setup the errors
-server.error(function(err, req, res, next){
-    if (err instanceof NotFound) {
-        res.render('404.jade', { locals: { 
-                  title : '404 - Not Found'
-                 ,description: ''
-                 ,author: ''
-                 ,analyticssiteid: 'XXXXXXX' 
-                },status: 404 });
-    } else {
-        res.render('500.jade', { locals: { 
-                  title : 'The Server Encountered an Error'
-                 ,description: ''
-                 ,author: ''
-                 ,analyticssiteid: 'XXXXXXX'
-                 ,error: err 
-                },status: 500 });
-    }
+app.set('port', process.env.PORT || 8081);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+app.set('view options', { layout: false });
+app.use(favicon(__dirname + '/static/images/favicon.ico'));
+app.use(session({ resave: true,
+                  saveUninitialized: true,
+                  secret: 'uwotm8' }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(multer());
+app.use(express.static(path.join(__dirname, 'static')));
+
+var server = app.listen(app.get('port'), function () {
+  var host = server.address().address
+  var port = server.address().port
+  console.log('Listening at http://%s:%s', host, port)
 });
-server.listen( port);
 
 ///////////////////////////////////////////
 //              Routes                   //
@@ -42,7 +35,7 @@ server.listen( port);
 
 /////// ADD ALL YOUR ROUTES HERE  /////////
 
-server.get('/', function(req,res){
+app.get('/', function(req,res){
   res.render('index.jade', {
     locals : { 
               title : 'Your Page Title'
@@ -53,15 +46,37 @@ server.get('/', function(req,res){
   });
 });
 
-
 //A Route for Creating a 500 Error (Useful to keep around)
-server.get('/500', function(req, res){
-    throw new Error('This is a 500 Error');
+app.get('/500', function(req, res){
+  res.status(404);
+
+  // respond with html page
+  if (req.accepts('html')) {
+    res.render('404.jade', { url: req.url });
+    return;
+  }
 });
 
 //The 404 Route (ALWAYS Keep this as the last route)
-server.get('/*', function(req, res){
-    throw new NotFound;
+app.get('*', function(req, res){
+  res.status(404);
+
+  // respond with html page
+  if (req.accepts('html')) {
+    res.render('404.jade', { url: req.url });
+    return;
+  }
+
+  // respond with json
+  if (req.accepts('json')) {
+    res.send({ error: 'Not found' });
+    return;
+  }
+
+  // default to plain-text. send()
+  res.type('txt').send('Not found');
+
+  //throw new NotFound;
 });
 
 function NotFound(msg){
@@ -69,6 +84,3 @@ function NotFound(msg){
     Error.call(this, msg);
     Error.captureStackTrace(this, arguments.callee);
 }
-
-
-console.log('Listening on http://0.0.0.0:' + port );
